@@ -1,0 +1,133 @@
+{
+  "nbformat": 4,
+  "nbformat_minor": 0,
+  "metadata": {
+    "colab": {
+      "provenance": [],
+      "authorship_tag": "ABX9TyPthOEhsUXbc2rOL5//qY/e",
+      "include_colab_link": true
+    },
+    "kernelspec": {
+      "name": "python3",
+      "display_name": "Python 3"
+    },
+    "language_info": {
+      "name": "python"
+    }
+  },
+  "cells": [
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "view-in-github",
+        "colab_type": "text"
+      },
+      "source": [
+        "<a href=\"https://colab.research.google.com/github/Treatco-ui/UTS-LUDFI/blob/main/UTS-BIG_DATA_Mohamad_Ludfi_Rahmatullah_14022300075_6B-BIS\" target=\"_parent\"><img src=\"https://colab.research.google.com/assets/colab-badge.svg\" alt=\"Open In Colab\"/></a>"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": null,
+      "metadata": {
+        "id": "zFM-rVPfXBsB"
+      },
+      "outputs": [],
+      "source": [
+        "pip install google-play-scraper"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "from google_play_scraper import reviews, Sort\n",
+        "import csv\n",
+        "\n",
+        "result, _ = reviews(\n",
+        "    'com.roblox.client',\n",
+        "    lang='id',\n",
+        "    country='id',\n",
+        "    sort=Sort.NEWEST,\n",
+        "    count=100,\n",
+        "    filter_score_with=None\n",
+        ")\n",
+        "\n",
+        "filename = 'ulasan_google_play.csv'\n",
+        "\n",
+        "\n",
+        "with open(filename, 'w', newline='', encoding='utf-8') as f:\n",
+        "    writer = csv.DictWriter(f, fieldnames=['userName', 'score', 'at', 'content'])\n",
+        "    writer.writeheader()\n",
+        "    for review in result:\n",
+        "\n",
+        "        writer.writerow({\n",
+        "            'userName': review['userName'],\n",
+        "            'score': review['score'],\n",
+        "            'at': review['at'],\n",
+        "            'content': review['content']\n",
+        "        })\n",
+        "\n",
+        "print(f\"Berhasil menyimpan {len(result)} ulasan ke '{filename}'\")"
+      ],
+      "metadata": {
+        "id": "LC6HhCjtXE1r"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "8727f57c"
+      },
+      "source": [
+        "import pandas as pd\n",
+        "\n",
+        "df = pd.read_csv(filename)\n",
+        "display(df.head())"
+      ],
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "f6d68241"
+      },
+      "source": [
+        "Next, we will install the `transformers` library, which is necessary to use models from Hugging Face. Then, we'll load the specified model and tokenizer."
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "3e7969b1"
+      },
+      "source": [
+        "pip install transformers torch"
+      ],
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "95159aa0"
+      },
+      "source": [
+        "from transformers import pipeline\n",
+        "\n",
+        "# Load the sentiment analysis pipeline with the specified model\n",
+        "sentiment_pipeline = pipeline(\"sentiment-analysis\", model=\"w11wo/indonesian-roberta-base-prdect-id\")\n",
+        "\n",
+        "# Perform sentiment analysis on the 'content' column\n",
+        "df['sentiment'] = df['content'].apply(lambda x: sentiment_pipeline(x)[0]['label'])\n",
+        "\n",
+        "# Display the DataFrame with sentiment results\n",
+        "display(df.head())"
+      ],
+      "execution_count": null,
+      "outputs": []
+    }
+  ]
+}
